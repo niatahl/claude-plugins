@@ -1,0 +1,11 @@
+{
+  "name": "niatahl-plugins",
+  "owner": { "name": "niatahl" },
+  "plugins": [
+    {
+      "name": "neon-district",
+      "source": "./neon-district",
+      "description": "Theme pack with a /skin switcher: Neon District, Blade-noir and Neo-Tokyo"
+    }
+  ]
+}
