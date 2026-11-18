@@ -77,30 +77,46 @@ const shape = (kind: Kind, x: number, w: number, h: number, b: number): string =
   }
 }
 
-type Layer = { seed: number; count: number; kinds?: readonly Kind[]; deck?: number; minH: number; maxH: number; minW: number; maxW: number; base: number }
+type Layer = { seed: number; count: number; kinds?: readonly Kind[]; deck?: number; minH: number; maxH: number; minW: number; maxW: number; base: number; from?: number; span?: number }
 
 // Buildings near the middle stay lower, so the words in front sit on sky.
 const centreDip = (x: number): number => 1 - 0.42 * Math.exp(-(((x - 800) / 380) ** 2))
 
-const layer = (l: Layer): string => {
+const strip = (l: Layer): string => {
   const rand = seeded(l.seed)
   const parts: string[] = []
-  const step = 1700 / l.count
+  const from = l.from ?? -60
+  const span = l.span ?? 1700
+  const step = span / l.count
 
   for (let i = 0; i < l.count; i++) {
     const kinds = l.kinds ?? KINDS
     const kind = kinds[Math.floor(rand() * kinds.length)] ?? 'tower'
     const slim = kind === 'spire' || kind === 'needle'
     const w = slim ? l.minW * (0.5 + rand() * 0.6) : l.minW + rand() * (l.maxW - l.minW)
-    const x = -60 + i * step + (rand() - 0.5) * step * 0.8
+    const x = from + i * step + (rand() - 0.5) * step * 0.8
     const h = (l.minH + rand() * (l.maxH - l.minH)) * centreDip(x + w / 2) * (slim ? 1.25 : 1)
     parts.push(shape(kind, x, w, h, l.base))
   }
   // A low continuous base so the layer reads as one city, not a row of toys.
   const deck = l.deck ?? 26
-  parts.push(`M-60 ${l.base}L-60 ${l.base - deck}L1660 ${l.base - deck}L1660 ${l.base}Z`)
+  const to = from + span + 20
+  parts.push(`M${from} ${l.base}L${from} ${l.base - deck}L${to} ${l.base - deck}L${to} ${l.base}Z`)
 
   return parts.join('')
+}
+
+// The middle strip (0–1600) is the original skyline; wings of their own seed
+// carry it out to WING on each side for wide windows (see SCENE).
+const WING = 2000
+const layer = (l: Layer): string => {
+  const count = Math.round((l.count * WING) / 1700)
+
+  return (
+    strip({ ...l, seed: l.seed + 1000, count, from: -60 - WING, span: WING }) +
+    strip(l) +
+    strip({ ...l, seed: l.seed + 2000, count, from: 1660, span: WING })
+  )
 }
 
 const FAR = layer({ seed: 7, count: 30, minH: 150, maxH: 360, minW: 34, maxW: 96, base: 1000 })
@@ -116,7 +132,14 @@ const HERO = shape('tower', HERO_X - 34, 68, 1000 - HERO_TIP - 68 * 0.7, 1000)
 // haze rising from the horizon, a teal shaft from the upper right, two layers
 // of falling rain, drifting dust and a fine static grain that keeps the
 // gradients from banding.
-const SCENE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+//
+// Fits any window shape (see README, "Scenes fit every screen"): haze, rain
+// and grain fill the window in CSS pixels; the sky and skyline sit on a
+// 1600×1000 stage pinned to the bottom, sized by the window's height on wide
+// screens, with wings drawn past its edges for ultrawides.
+const STAGE = `<svg width="100%" height="100%" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMax meet" overflow="visible">`
+const WIDE = `x="${-60 - WING}" width="${1720 + 2 * WING}"`
+const SCENE = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
 <style>
 @keyframes rainA { from { transform: translate(0,0) } to { transform: translate(0,240px) } }
 @keyframes rainB { from { transform: translate(0,0) } to { transform: translate(0,160px) } }
@@ -195,23 +218,28 @@ const SCENE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" p
 </filter>
 </defs>
 
-<rect width="1600" height="1000" fill="url(#sky)"/>
+<rect width="100%" height="100%" fill="#070a0c"/>
+${STAGE}
+<rect ${WIDE} height="1000" fill="url(#sky)"/>
 <polygon class="shaft" points="1180,0 1600,0 980,1000 640,1000" fill="url(#shaftg)"/>
-<rect class="breathe" width="1600" height="1000" fill="url(#sodium)"/>
-<rect width="1600" height="1000" fill="url(#sodium2)"/>
-<rect class="holo" width="1600" height="1000" fill="url(#holo)"/>
+</svg>
+<rect class="breathe" width="100%" height="100%" fill="url(#sodium)"/>
+<rect width="100%" height="100%" fill="url(#sodium2)"/>
+<rect class="holo" width="100%" height="100%" fill="url(#holo)"/>
 
-<rect class="breathe" y="380" width="1600" height="620" fill="url(#horizon)"/>
+${STAGE}
+<rect class="breathe" ${WIDE} y="380" height="620" fill="url(#horizon)"/>
 <path d="${FAR}" fill="#2a1a10" fill-opacity=".7"/>
-<rect y="600" width="1600" height="400" fill="url(#veil)"/>
+<rect ${WIDE} y="600" height="400" fill="url(#veil)"/>
 <path d="${MID}${HERO}" fill="#140d09" fill-opacity=".92"/>
-<rect y="760" width="1600" height="240" fill="url(#veil)" opacity=".7"/>
+<rect ${WIDE} y="760" height="240" fill="url(#veil)" opacity=".7"/>
 <path d="${NEAR}" fill="#07090b"/>
-<rect class="breathe" y="760" width="1600" height="240" fill="url(#fog)"/>
+<rect class="breathe" ${WIDE} y="760" height="240" fill="url(#fog)"/>
+</svg>
 
-<g class="rainB"><rect x="-100" y="-200" width="1800" height="1400" fill="url(#rainFar)"/></g>
-<g class="rainA"><rect x="-100" y="-240" width="1800" height="1480" fill="url(#rainNear)"/></g>
-
+<g class="rainB"><rect y="-200" width="100%" height="200%" fill="url(#rainFar)"/></g>
+<g class="rainA"><rect y="-240" width="100%" height="200%" fill="url(#rainNear)"/></g>
+${STAGE}
 <g class="dust" fill="#ffc48a">
 <circle cx="180" cy="820" r="1.4" opacity=".35"/>
 <circle cx="260" cy="760" r="1" opacity=".25"/>
@@ -220,8 +248,9 @@ const SCENE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" p
 <circle cx="1420" cy="840" r="1.1" opacity=".25"/>
 <circle cx="1510" cy="780" r="1.3" opacity=".3"/>
 </g>
+</svg>
 
-<rect width="1600" height="1000" filter="url(#grain)" opacity=".045"/>
+<rect width="100%" height="100%" filter="url(#grain)" opacity=".045"/>
 </svg>`
 
 const look: ThemeSetArgs = {

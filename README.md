@@ -50,6 +50,16 @@ then `/reload-plugins`, or start a new session.
 
 Write a file in `neon-district/hooks/themes/` that exports a `Theme` (see `theme.ts` and the existing themes), then add it to the `THEMES` list in `neon-district/hooks/register.tsx`.
 
+### Scenes fit every screen
+
+This is a requirement for every theme. The themes run on laptops, docked workstations, portrait monitors and 32:9 ultrawides, so a backdrop must adapt to the window's shape: nothing important gets cropped, nothing gets stretched, and no edge is left bare.
+
+- No fixed `viewBox` with `slice` on the root `<svg>`. Give the root `width="100%" height="100%"` and no `viewBox`, so it works in CSS pixels.
+- Fills, glows, rain and grain are window-wide: `width="100%" height="100%"`.
+- Frame pieces and corner details are pinned to the window edges with nested `<svg x="100%">` / `<svg y="100%">` and `overflow="visible"` (see `neon-district.ts`).
+- Scenery goes on a stage: a nested `<svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMax meet" overflow="visible">`, drawn out to x = −2000…3600 so wide windows show more city instead of a cropped one (see `blade-noir.ts` and `neo-tokyo.ts`).
+- Before merging, check a new or changed scene at 16:10, 32:9 and a portrait window.
+
 ## License
 
 MIT

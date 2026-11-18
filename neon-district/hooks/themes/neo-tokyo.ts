@@ -61,13 +61,13 @@ type City = { path: string; signs: string }
 
 // A dense block of rectangular high-rises: setbacks, rooftop masts, and
 // vertical signboards glowing on some faces.
-const city = (seed: number, minH: number, maxH: number, minW: number, maxW: number, signChance: number): City => {
+const block = (seed: number, minH: number, maxH: number, minW: number, maxW: number, signChance: number, from: number, to: number): City => {
   const rand = seeded(seed)
   let path = ''
   const signs: string[] = []
-  let x = -40
+  let x = from
 
-  while (x < 1640) {
+  while (x < to) {
     const w = minW + rand() * (maxW - minW)
     const h = (minH + rand() * (maxH - minH)) * centreDip(x + w / 2)
     const top = HORIZON - h
@@ -108,12 +108,25 @@ const city = (seed: number, minH: number, maxH: number, minW: number, maxW: numb
   return { path, signs: signs.join('') }
 }
 
+// The middle block (0–1600) is the original city; wings of their own seed
+// carry it out to WING on each side for wide windows (see SCENE).
+const WING = 2000
+const city = (seed: number, minH: number, maxH: number, minW: number, maxW: number, signChance: number): City => {
+  const parts = [
+    block(seed + 1000, minH, maxH, minW, maxW, signChance, -40 - WING, -40),
+    block(seed, minH, maxH, minW, maxW, signChance, -40, 1640),
+    block(seed + 2000, minH, maxH, minW, maxW, signChance, 1640, 1640 + WING),
+  ]
+
+  return { path: parts.map(p => p.path).join(''), signs: parts.map(p => p.signs).join('') }
+}
+
 const FAR = city(4, 170, 440, 24, 64, 0)
 const MID = city(31, 120, 390, 26, 78, 0.4)
 const NEAR = city(19, 70, 320, 30, 90, 0.7)
 
 // A small targeting reticle, top right: broken rings, ticks, a slow turn.
-const RETICLE = `<g transform="translate(1440 150)" fill="none" stroke="#4fd1c5" stroke-opacity=".45">
+const RETICLE = `<g transform="translate(-160 150)" fill="none" stroke="#4fd1c5" stroke-opacity=".45">
 <g class="spin">
 <circle r="46" stroke-width="1" stroke-dasharray="52 20 8 20"/>
 <circle r="58" stroke-width=".6" stroke-dasharray="2 6" stroke-opacity=".3"/>
@@ -127,7 +140,16 @@ const RETICLE = `<g transform="translate(1440 150)" fill="none" stroke="#4fd1c5"
 // layers of high-rises with glowing signboards, their reflection rippling in
 // dark water, light rain, a reticle in one corner, and a static grain that
 // keeps the gradients from banding.
-const SCENE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+//
+// Fits any window shape (see README, "Scenes fit every screen"): rain and
+// grain fill the window in CSS pixels and the reticle is pinned to its top
+// right; sky, city and water sit on a 1600×1000 stage pinned to the bottom,
+// sized by the window's height on wide screens, with wings drawn past its
+// edges for ultrawides.
+const X0 = -40 - WING
+const XW = 1680 + 2 * WING
+const WIDE = `x="${X0}" width="${XW}"`
+const SCENE = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
 <style>
 @keyframes drift { from { transform: translateX(-120px) } to { transform: translateX(120px) } }
 @keyframes ripple { from { transform: translateY(0) } to { transform: translateY(12px) } }
@@ -168,11 +190,11 @@ const SCENE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" p
 <pattern id="ripples" width="1600" height="12" patternUnits="userSpaceOnUse">
 <rect width="1600" height="7" fill="#fff"/>
 </pattern>
-<mask id="waterMask" maskUnits="userSpaceOnUse" x="0" y="${HORIZON}" width="1600" height="${1000 - HORIZON}">
-<rect y="${HORIZON}" width="1600" height="${1000 - HORIZON}" fill="url(#reflectFade)"/>
+<mask id="waterMask" maskUnits="userSpaceOnUse" ${WIDE} y="${HORIZON}" height="${1000 - HORIZON}">
+<rect ${WIDE} y="${HORIZON}" height="${1000 - HORIZON}" fill="url(#reflectFade)"/>
 </mask>
-<mask id="rippleMask" maskUnits="userSpaceOnUse" x="0" y="${HORIZON - 20}" width="1600" height="${1020 - HORIZON}">
-<rect class="ripple" y="${HORIZON - 12}" width="1600" height="${1012 - HORIZON}" fill="url(#ripples)"/>
+<mask id="rippleMask" maskUnits="userSpaceOnUse" ${WIDE} y="${HORIZON - 20}" height="${1020 - HORIZON}">
+<rect class="ripple" ${WIDE} y="${HORIZON - 12}" height="${1012 - HORIZON}" fill="url(#ripples)"/>
 </mask>
 <pattern id="rainP" width="150" height="200" patternUnits="userSpaceOnUse">
 <g stroke="#9cc4bc" stroke-width=".9" stroke-linecap="round">
@@ -193,32 +215,41 @@ ${NEAR.signs}
 </g>
 </defs>
 
-<rect width="1600" height="${HORIZON}" fill="url(#sky)"/>
+<rect width="100%" height="100%" fill="#080f11"/>
+<svg width="100%" height="100%" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMax meet" overflow="visible">
+<rect ${WIDE} height="${HORIZON}" fill="url(#sky)"/>
 <g class="cloud" filter="url(#soft)" fill="#2b403c" opacity=".55">
+<ellipse cx="-1500" cy="140" rx="420" ry="56"/>
+<ellipse cx="-820" cy="80" rx="380" ry="50"/>
+<ellipse cx="-300" cy="260" rx="320" ry="44"/>
 <ellipse cx="260" cy="120" rx="380" ry="60"/>
 <ellipse cx="980" cy="70" rx="460" ry="50"/>
 <ellipse cx="1420" cy="240" rx="340" ry="56"/>
 <ellipse cx="600" cy="300" rx="300" ry="40"/>
+<ellipse cx="2100" cy="110" rx="400" ry="54"/>
+<ellipse cx="2750" cy="280" rx="340" ry="46"/>
+<ellipse cx="3300" cy="90" rx="420" ry="52"/>
 </g>
 <path d="${FAR.path}" fill="#111d1d" opacity=".9"/>
-<rect class="mist" x="-200" y="${HORIZON - 220}" width="2000" height="200" fill="url(#mistg)"/>
+<rect class="mist" x="${X0 - 200}" y="${HORIZON - 220}" width="${XW + 400}" height="200" fill="url(#mistg)"/>
 <path d="${MID.path}" fill="#0c1517"/>
 <g opacity=".55">${MID.signs}</g>
-<rect class="mist" x="-200" y="${HORIZON - 160}" width="2000" height="170" fill="url(#mistg)" opacity=".8"/>
+<rect class="mist" x="${X0 - 200}" y="${HORIZON - 160}" width="${XW + 400}" height="170" fill="url(#mistg)" opacity=".8"/>
 <use href="#nearCity"/>
-<rect class="mist" x="-200" y="${HORIZON - 90}" width="2000" height="120" fill="url(#mistg)" opacity=".7"/>
+<rect class="mist" x="${X0 - 200}" y="${HORIZON - 90}" width="${XW + 400}" height="120" fill="url(#mistg)" opacity=".7"/>
 
-<rect y="${HORIZON}" width="1600" height="${1000 - HORIZON}" fill="url(#water)"/>
+<rect ${WIDE} y="${HORIZON}" height="${1000 - HORIZON}" fill="url(#water)"/>
 <g mask="url(#waterMask)">
 <g mask="url(#rippleMask)">
 <use href="#nearCity" transform="translate(0 ${2 * HORIZON}) scale(1 -1)" opacity=".75"/>
 </g>
 </g>
-<rect y="${HORIZON - 1}" width="1600" height="2" fill="#4a6b63" opacity=".35"/>
+<rect ${WIDE} y="${HORIZON - 1}" height="2" fill="#4a6b63" opacity=".35"/>
+</svg>
 
-<g class="rain"><rect x="-50" y="-200" width="1700" height="1400" fill="url(#rainP)"/></g>
-${RETICLE}
-<rect width="1600" height="1000" filter="url(#grain)" opacity=".045"/>
+<g class="rain"><rect y="-200" width="100%" height="200%" fill="url(#rainP)"/></g>
+<svg x="100%" overflow="visible">${RETICLE}</svg>
+<rect width="100%" height="100%" filter="url(#grain)" opacity=".045"/>
 </svg>`
 
 const look: ThemeSetArgs = {
