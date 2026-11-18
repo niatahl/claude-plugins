@@ -15,6 +15,10 @@ import type { ThemeSetArgs } from 'claude-code'
 //   (see blade-noir.ts and neo-tokyo.ts).
 // Never a fixed viewBox with `slice` on the root: it crops on every shape it
 // wasn't drawn for. Check new scenes at 16:10, 32:9 and a portrait window.
+//
+// To frame the chat column, see README, "Framing the chat column": a 768 px
+// column centred between a ~280 px sidebar and ~320 px side pane, as the
+// rails in machine-cult.ts do.
 export type Theme = {
   id: string
   label: string
