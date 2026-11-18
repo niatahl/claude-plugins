@@ -201,13 +201,14 @@ const BRASS = '#b88a3c'
 // screenshot of the Code tab, both panels open). Its width is fixed but
 // its place is not: it centres in the room the sidebar and side pane leave,
 // and the backdrop is never told where that is. The theme assumes the usual
-// layout of the people using it, both panels open, so the column's centre
-// sits (SIDEBAR - PANE) / 2 from the window's. The rails stand GAP outside
+// layout of the people using it: both panels open at 320 px each, so the
+// column sits at the window's centre. (In general its centre is
+// (SIDEBAR - PANE) / 2 from the window's.) The rails stand GAP outside
 // the column and fade at both ends, so a panel dragged wider or closed reads
 // as breathing room. Below the window width that layout needs, the column
 // shrinks and the rails step aside.
 const COLUMN = 768
-const SIDEBAR = 280
+const SIDEBAR = 320
 const PANE = 320
 const GAP = 72
 const RAIL = COLUMN / 2 + GAP

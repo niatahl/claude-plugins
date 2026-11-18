@@ -17,8 +17,8 @@ import type { ThemeSetArgs } from 'claude-code'
 // wasn't drawn for. Check new scenes at 16:10, 32:9 and a portrait window.
 //
 // To frame the chat column, see README, "Framing the chat column": a 768 px
-// column centred between a ~280 px sidebar and ~320 px side pane, as the
-// rails in machine-cult.ts do.
+// column centred between a 320 px sidebar and a 320 px side pane, so at the
+// window's centre, as the rails in machine-cult.ts do.
 export type Theme = {
   id: string
   label: string

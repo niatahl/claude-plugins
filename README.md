@@ -66,10 +66,10 @@ This is a requirement for every theme. The themes run on laptops, docked worksta
 A backdrop is never told where the sidebar, side pane or chat column are; it only knows the window. What we do know about the desktop app's Code tab:
 
 - The chat column is a fixed **768 px** wide (the prompt box's width) and sits **centred in the room between the two panels**, not in the window.
-- The themes assume the usual layout here, both panels open: sidebar about **280 px**, side pane about **320 px**. The column's centre is then `(sidebar − side pane) / 2` from the window's centre, about 20 px left of it.
+- The themes assume the usual layout here: both panels open at **320 px** each, so the column sits exactly at the window's centre. (In general its centre is `(sidebar − side pane) / 2` from the window's.)
 - Draw column decorations in a nested `<svg x="50%" overflow="visible">` shifted by that offset, and hide them with a media query on windows narrower than `sidebar + side pane + column + margins`, where the column starts to shrink (see the rails in `machine-cult.ts`).
 - Keep them clear of the column (Machine Cult's rails stand 72 px outside it) and let them fade at the ends, so a small panel difference reads as breathing room.
-- If the frame sits off on a device, drag the sidebar to about 280 px: it lines up again.
+- If the frame sits off on a device, drag the sidebar until it matches the side pane (320 px): it lines up again.
 
 To re-measure after an app update: take a full-window screenshot with both panels open, find the window, sidebar, side pane and prompt-box edges, and work out the screenshot's scale from the window width (or from a decoration whose app-pixel position you know). Divide by that scale to get app pixels. Only the band strip above the prompt is truly inside the column, and we decided against drawing there.
 
