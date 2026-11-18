@@ -1,13 +1,14 @@
 import type { EngineInterface, Register } from 'claude-code'
 
 import { bladeNoir } from './themes/blade-noir.js'
+import { machineCult } from './themes/machine-cult.js'
 import { neonDistrict } from './themes/neon-district.js'
 import { neoTokyo } from './themes/neo-tokyo.js'
 import type { Theme } from './themes/theme.js'
 
 // Every look /skin can switch to. Add a theme: write a file in themes/,
 // then list it here.
-const THEMES: readonly Theme[] = [neonDistrict, bladeNoir, neoTokyo]
+const THEMES: readonly Theme[] = [neonDistrict, bladeNoir, neoTokyo, machineCult]
 const DEFAULT = neonDistrict.id
 const STORE_KEY = 'theme'
 const OFF = 'off'

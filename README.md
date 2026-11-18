@@ -4,13 +4,14 @@ Personal plugins for Claude Code.
 
 ## neon-district
 
-A theme pack for the Claude desktop and mobile apps, with three looks and a `/skin` command to switch between them. Each theme sets a full color palette and an animated backdrop behind the conversation. All art is original, drawn in SVG.
+A theme pack for the Claude desktop and mobile apps, with four looks and a `/skin` command to switch between them. Each theme sets a full color palette and an animated backdrop behind the conversation. All art is original, drawn in SVG.
 
 | Theme | Look |
 | --- | --- |
 | `neon-district` | A red-black game menu: salmon-red frames and text, cyan highlights, cut-corner HUD brackets and scanlines |
 | `blade-noir` | Rain and sodium haze: a layered skyline of spires fading into amber fog, cold teal accents |
 | `neo-tokyo` | An overcast harbour city in teal haze: three layers of high-rises with neon boards, reflected in rippling water |
+| `machine-cult` | A gothic forge-cathedral city in rust crimson and brass: smokestacks, gear-crowned towers, a great cog turning in the haze, rising embers and a phosphor-green readout |
 
 ### Using it
 
