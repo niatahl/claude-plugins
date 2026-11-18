@@ -28,9 +28,9 @@ const apply = async ($: EngineInterface, t: Theme): Promise<void> => {
   if (unpainted !== undefined) {
     $.ui.toast(`${t.label}: ${unpainted}`)
   }
-  const set = await $.theme.set(t.look)
-
-  $.ui.status(set.isDrawn ? undefined : set.reason)
+  // Where no surface draws a look (the terminal, editors) this does nothing,
+  // by design: no notice about it.
+  await $.theme.set(t.look)
 }
 
 const chosen = async ($: EngineInterface): Promise<string> => {
@@ -69,7 +69,6 @@ export const register: Register = on => {
 
     if (ask === OFF) {
       await $.theme.clear()
-      $.ui.status(undefined)
       await $.store.set(STORE_KEY, OFF)
 
       return { text: "Theme off: back to the app's own look." }
